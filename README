@@ -1,0 +1,126 @@
+yuvalpadan
+ran.inbar
+
+=============================
+=      File description     =
+=============================
+The main package:
+    Sjavac.java - the manager class of the program.
+    Parser.java - the main parser of the given s-java file.
+    Regex - this enum represents all necessary regex for this program.
+    RegexPatterns.java - this class represents all the necessary regex patterns for this program.
+    SjavaException.java	- this class is an abstract class represent an exception in sJava file.
+
+The Scopes package:
+    Scope.java - this class is an abstract class representing a scope in s-java file.
+    GlobalScope.java - this class represents a global scope of s-java file.
+    InnerScope.java - this class is an abstract class represents an inner scope in s-java file..
+    MethodScope.java - this class represents a scope of a method in s-java file.
+    BlockScope.java - this class represents a scope of a block (while / if blocks) in s-java file.
+
+The Variable package:
+    Variable.java - this class represent a variable in s-java file
+    VariableType.java - this enum represents all possible types of variable in s-java.
+
+=============================
+=          Design           =
+=============================
+                                      ***** Scope hierarchy *****
+
+                                                 Scope
+                                          _________|_________
+                                         |                   |
+                                     InnerScope         GlobalScope
+                                _________|_________
+                               |                   |
+                          MethodScope          BlockScope
+
+             ------------------------------------------------------------------------------
+
+                                    ***** Exceptions hierarchy *****
+
+                                               Exception
+                                                   |
+                                             SJavaException
+                         __________________________|__________________________
+                        |                          |                          |
+                VariableException            SyntaxException            MethodException
+
+We have design the program as followed:
+
+program process:
+The manager of the program is the Sjavac class, which calls the parser with the given sJava file.
+Using the goOver method, The parser runs throughout the file, creates an array of the relevant lines to check,
+and initializes a global scope object containing the global variables and methods.
+(Needless to say that if a line in the file doesn't match any regex, an exception is thrown).
+Then, the program validates each method contained by the globalScope.
+Each scope has an isScopeValid method that verifies its' validation. In that way, each time we meet a new
+variable declaration / variable assignment / a new scope (if/while), we immediately check its'
+specific validation, and so on...
+Slightly different from the global scope content check, an Inner scope validation is composed by a signature
+check and a content check that are unique to an Inner scope type.
+
+program scope - design:
+As mentioned, there are three different types of scopes: global, block and method scope.
+Yet, the block and the method scopes are inner scopes, unlike the global. From that reason, the block and
+method scopes has a lot in common (data members and methods). That is why we created the InnerScope abstract
+class extending the super-class Scope. As a result, the MethodScope and BlockScope classes became short and
+exact. Each scope know's its' upper scope and its' global scope. Using that fact, each scope can know the pre-
+declared/assigned variable and all the methods declared in the global scope. In addition, it has its'
+content (held by an ArrayList<String> object). Thus, the verification is easy, progressive and immune to
+OutOfBound exceptions.
+
+=============================
+=  Implementation details   =
+=============================
+
+In this project we implemented the composing principle. For example, a variable object contains a variableType
+object rather than just assign it an informative string. Using the variableType object we can compare variables,
+method arguments and parameters. Another example is that each scope has a data member of its' global scope.
+Thus,whenever we meet a method call command we can easily ask the global scope whether it's contained by it or not.
+
+Moreover, concerning exceptions, we used nested-classes to emphasize the connection among the different
+exception types and of-course for striving for a shorter code and less unnecessary classes files.
+
+=============================
+=    Answers to questions   =
+=============================
+
+                          ******** Error Handling (section 6.1) *********
+
+We decided to have an abstract class represents an general Sjava exception clas, from which a specific
+exceptions classes that can be occur while parsing the s-java file inherit.
+the specific exception class are: MethodException (represents an exception related to methods. For example
+when calling a method that does not exist), VariableException (represents an exception related to variable.
+For example when trying to assign new value to a final variable or when tyring yo assign value to a variable
+that have not been initialized) and SyntaxException (represent a syntax exception in s-java file).
+Errors that occur due to IO problems have already been treated in the program's main class (Sjavac).
+
+                        ******** Object Oriented Design (section 6.2) ********
+
+Dilling with classes:
+if we had to dill with classes written in the Sjava file we would add another class extending scope class.
+It is important to notice that a ClassScope is similar to an InnerScope and a GlobalScope bur yet differ from.
+In that case, the isScopeValid method of the globalScope will ask if all ClassScopes are valid that will ask
+if all the methodScopes are valid that will ask if all the blockScopes are valid and so on...
+the globalScope will contain an array of all the classes that will contain an array of all methods and so on.
+
+Dilling with standard Java methods:
+In that case we will add some compatible regex and matchers and as we go through the file we will ask if the
+current line matches its' regex, if so, a corresponding action will be executed.
+
+                        ******** Regular Expressions (section 6.2) ********
+
+\s*(final\s+)?(String|int|double|boolean|char)\s+((?:_\w+|[a-zA-Z]+\w*\s*(?:=\s*(".*"|-?\d*\.?\d+|'.'
+|true|false|-?\d*\.?\d+|-?\d+|_\w+|[a-zA-Z]+\w*))?\s*,\s*)*(?:_\w+|[a-zA-Z]+\w*\s*(?:=\s*(".*"|-?\d*\.?\d+|'.'
+|true|false|-?\d*\.?\d+|-?\d+|_\w+|[a-zA-Z]+\w*))?\s*))\s*;\s**
+
+This regular expression is used to catch a variable declaration in sJava file.
+It has 3 groups, the first is the the final declaration, the second is the variableType declared and the third is
+the variables themselves with their assignments.
+
+\s*(?:if|while)\s*\((.*)\)\s*\{\s*
+
+This regular expression is used to catch a block (if/while) signature in sJava file.
+The only group is the blocks' inner statement (the value inside the brackets). Later on, the program verifies
+the statement is indeed valid.
