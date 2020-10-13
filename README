@@ -1,6 +1,3 @@
-yuvalpadan
-ran.inbar
-
 =============================
 =      File description     =
 =============================
@@ -81,46 +78,3 @@ Thus,whenever we meet a method call command we can easily ask the global scope w
 
 Moreover, concerning exceptions, we used nested-classes to emphasize the connection among the different
 exception types and of-course for striving for a shorter code and less unnecessary classes files.
-
-=============================
-=    Answers to questions   =
-=============================
-
-                          ******** Error Handling (section 6.1) *********
-
-We decided to have an abstract class represents an general Sjava exception clas, from which a specific
-exceptions classes that can be occur while parsing the s-java file inherit.
-the specific exception class are: MethodException (represents an exception related to methods. For example
-when calling a method that does not exist), VariableException (represents an exception related to variable.
-For example when trying to assign new value to a final variable or when tyring yo assign value to a variable
-that have not been initialized) and SyntaxException (represent a syntax exception in s-java file).
-Errors that occur due to IO problems have already been treated in the program's main class (Sjavac).
-
-                        ******** Object Oriented Design (section 6.2) ********
-
-Dilling with classes:
-if we had to dill with classes written in the Sjava file we would add another class extending scope class.
-It is important to notice that a ClassScope is similar to an InnerScope and a GlobalScope bur yet differ from.
-In that case, the isScopeValid method of the globalScope will ask if all ClassScopes are valid that will ask
-if all the methodScopes are valid that will ask if all the blockScopes are valid and so on...
-the globalScope will contain an array of all the classes that will contain an array of all methods and so on.
-
-Dilling with standard Java methods:
-In that case we will add some compatible regex and matchers and as we go through the file we will ask if the
-current line matches its' regex, if so, a corresponding action will be executed.
-
-                        ******** Regular Expressions (section 6.2) ********
-
-\s*(final\s+)?(String|int|double|boolean|char)\s+((?:_\w+|[a-zA-Z]+\w*\s*(?:=\s*(".*"|-?\d*\.?\d+|'.'
-|true|false|-?\d*\.?\d+|-?\d+|_\w+|[a-zA-Z]+\w*))?\s*,\s*)*(?:_\w+|[a-zA-Z]+\w*\s*(?:=\s*(".*"|-?\d*\.?\d+|'.'
-|true|false|-?\d*\.?\d+|-?\d+|_\w+|[a-zA-Z]+\w*))?\s*))\s*;\s**
-
-This regular expression is used to catch a variable declaration in sJava file.
-It has 3 groups, the first is the the final declaration, the second is the variableType declared and the third is
-the variables themselves with their assignments.
-
-\s*(?:if|while)\s*\((.*)\)\s*\{\s*
-
-This regular expression is used to catch a block (if/while) signature in sJava file.
-The only group is the blocks' inner statement (the value inside the brackets). Later on, the program verifies
-the statement is indeed valid.
